@@ -61,15 +61,12 @@ const AMBatchEventLimit = 500; // event size limit from sdk is 32KB => 15MB
 // https://www.geeksforgeeks.org/how-to-create-hash-from-string-in-javascript/
 /* function stringToHash(string) {
   let hash = 0;
-
   if (string.length == 0) return hash;
-
   for (i = 0; i < string.length; i++) {
     char = string.charCodeAt(i);
     hash = (hash << 5) - hash + char;
     hash &= hash;
   }
-
   return Math.abs(hash);
 } */
 
@@ -102,9 +99,7 @@ function setPriceQuanityInPayload(message, rawPayload) {
     quantity = 1;
   } else {
     price = message.properties.price;
-    if (message.properties.quantity) {
-      quantity = message.properties.quantity;
-    }
+    quantity = message.properties.quantity || 1;
   }
   rawPayload.price = price;
   rawPayload.quantity = quantity;
@@ -222,8 +217,9 @@ function responseBuilderSimple(
       break;
     default:
       set(rawPayload, "event_properties", message.properties);
-      if (evType === EventType.TRACK)
+      if (message.type === EventType.TRACK)
         set(rawPayload, "user_properties", message.context.traits);
+
       rawPayload.event_type = evType;
       rawPayload.user_id = message.userId;
       if (
@@ -458,23 +454,24 @@ function isProductArrayInPayload(message) {
   return isProductArray;
 }
 
-function getProductPurchasedEvents(message, destination, sendEvent) {
+function getProductPurchasedEvents(message, destination) {
+  const productPurchasedEvents = [];
   if (isProductArrayInPayload(message)) {
     let counter = 0;
 
     // Create product purchased event for each product in products array.
     message.properties.products.forEach(product => {
       counter += 1;
-      const eventClonePurchaseProduct = createProductPurchasedEvent(
+      const productPurchasedEvent = createProductPurchasedEvent(
         message,
         destination,
         product,
         counter
       );
-      sendEvent.push(eventClonePurchaseProduct);
+      productPurchasedEvents.push(productPurchasedEvent);
     });
   }
-  return sendEvent;
+  return productPurchasedEvents;
 }
 
 function trackRevenueEvent(message, destination) {
@@ -516,7 +513,13 @@ function trackRevenueEvent(message, destination) {
     destination.Config.trackRevenuePerProduct === true ||
     destination.Config.trackProductsOnce === false
   ) {
-    sendEvents = getProductPurchasedEvents(message, destination, sendEvents);
+    const productPurchasedEvents = getProductPurchasedEvents(
+      message,
+      destination
+    );
+    if (productPurchasedEvents.length > 0) {
+      sendEvents = [...sendEvents, ...productPurchasedEvents];
+    }
   }
   return sendEvents;
 }
@@ -525,7 +528,7 @@ function updateTraitsObject(property, traitObject, newProperty) {
   let propertyToUpdate;
   if (traitObject.hasOwnProperty(property)) {
     propertyToUpdate = traitObject[property];
-    newProperty[property] = propertyToUpdate;
+    traitObject[newProperty][property] = propertyToUpdate;
     delete traitObject[property];
   }
   return traitObject;
@@ -537,6 +540,7 @@ function passingTraitConfigs(
   traitObject
 ) {
   let updatedTrait;
+  traitObject[objectToInclude] = new Object();
   configPropertyTrait.forEach(traitCount => {
     const property = traitCount.traits;
     updatedTrait = updateTraitsObject(property, traitObject, objectToInclude);
@@ -544,40 +548,40 @@ function passingTraitConfigs(
   return updatedTrait;
 }
 
-function traitsHandler(message, destination) {
+function handlingTraits(message, destination) {
   let updatedTrait;
   const messageBuffer = JSON.parse(JSON.stringify(message));
   const traitObject = JSON.parse(JSON.stringify(messageBuffer.context.traits));
 
   if (destination.Config.traitsToIncrement) {
-    traitObject.$add = new Object();
+    const objectToInclude = "$add";
     updatedTrait = passingTraitConfigs(
       destination.Config.traitsToIncrement,
-      traitObject.$add,
+      objectToInclude,
       traitObject
     );
   }
   if (destination.Config.traitsToSetOnce) {
-    traitObject.$setOnce = new Object();
+    const objectToInclude = "$setOnce";
     updatedTrait = passingTraitConfigs(
       destination.Config.traitsToSetOnce,
-      traitObject.$setOnce,
+      objectToInclude,
       traitObject
     );
   }
   if (destination.Config.traitsToAppend) {
-    traitObject.$append = new Object();
+    const objectToInclude = "$append";
     updatedTrait = passingTraitConfigs(
       destination.Config.traitsToAppend,
-      traitObject.$append,
+      objectToInclude,
       traitObject
     );
   }
   if (destination.Config.traitsToPrepend) {
-    traitObject.$prepend = new Object();
+    const objectToInclude = "$prepend";
     updatedTrait = passingTraitConfigs(
       destination.Config.traitsToPrepend,
-      traitObject.$prepend,
+      objectToInclude,
       traitObject
     );
   }
@@ -607,7 +611,7 @@ function process(event) {
       destination.Config.traitsToPrepend ||
       destination.Config.traitsToAppend
     ) {
-      const identifyTraits = traitsHandler(message, destination);
+      const identifyTraits = handlingTraits(message, destination);
       toSendEvents.push(identifyTraits);
     } else {
       toSendEvents.push(message);

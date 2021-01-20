@@ -1,4 +1,9 @@
 [
+
+
+
+
+  
   {
     "version": "1",
     "type": "REST",
@@ -179,6 +184,10 @@
             },
             "time": 1571051718300,
             "user_id": "12345",
+            "user_properties": {
+              "anonymousId" : "12345",
+              "email" : "sayan@gmail.com"
+          },
             "ip": "0.0.0.0"
           }
         ],
@@ -519,6 +528,13 @@
             "device_brand": "Google",
             "time": 1600355223515,
             "user_id": "0572f78fa49c648e",
+            "user_properties": {
+              "id": "0572f78fa49c648e",
+              "userId": "0572f78fa49c648e",
+              "address": {},
+              "company": {},
+              "anonymousId": "0572f78fa49c648e"
+          },
             "session_id": -1
           }
         ],
@@ -606,6 +622,9 @@
                             "revenue": 48,
                             "revenueType": "Purchased",
                             "time": 1597383030118,
+                            "user_properties": {
+                              "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+                          },
                             "session_id": -1
                         }
                     ],
@@ -649,6 +668,9 @@
                                 "product_id": "507f1f77bcf86cd799439011"
                             },
                             "time": 1597383030118,
+                            "user_properties": {
+                              "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+                          },
                             "session_id": -1
                         }
                     ],
@@ -690,6 +712,9 @@
                                 "product_id": "505bd76785ebb509fc183733"
                             },
                             "time": 1597383030118,
+                            "user_properties": {
+                              "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+                          },
                             "session_id": -1
                         }
                     ],
@@ -762,6 +787,9 @@
                           "quantity": 2,
                           "revenue": 48,
                           "time": 1597383030118,
+                          "user_properties": {
+                            "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+                        },
                           "session_id": -1
                       }
                   ],
@@ -809,6 +837,9 @@
                                 "checkout_id": "fksdjfsdjfisjf9sdfjsd9f"
                             },
                             "time": 1597383030118,
+                            "user_properties": {
+                              "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+                          },
                             "session_id": -1
                         }
                     ],
@@ -853,6 +884,9 @@
                             "quantity": 1,
                             "revenueType": "Purchased",
                             "time": 1597383030118,
+                            "user_properties": {
+                              "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+                          },
                             "session_id": -1
                         }
                     ],
@@ -895,6 +929,9 @@
                             "quantity": 2,
                             "revenueType": "Purchased",
                             "time": 1597383030118,
+                            "user_properties": {
+                              "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+                          },
                             "session_id": -1
                         }
                     ],
@@ -963,6 +1000,9 @@
               "checkout_id": "fksdjfsdjfisjf9sdfjsd9f"
             },
             "time": 1597383030118,
+            "user_properties": {
+              "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+          },
             "session_id": -1
           }
         ],
@@ -1007,6 +1047,9 @@
             "quantity": 1,
             "revenueType": "Purchased",
             "time": 1597383030118,
+            "user_properties": {
+              "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+          },
             "session_id": -1
           }
         ],
@@ -1049,6 +1092,9 @@
             "quantity": 2,
             "revenueType": "Purchased",
             "time": 1597383030118,
+            "user_properties": {
+              "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+          },
             "session_id": -1
           }
         ],
@@ -1100,6 +1146,9 @@
                       "revenue": 48,
                       "revenueType": "Purchased",
                       "time": 1597383030118,
+                      "user_properties": {
+                        "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+                    },
                       "session_id": -1
                   }
               ],
@@ -1151,6 +1200,9 @@
                       "revenue": 48,
                       "revenueType": "Purchased",
                       "time": 1597383030118,
+                      "user_properties": {
+                        "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+                    },
                       "session_id": -1
                   }
               ],
@@ -1202,6 +1254,9 @@
                       "revenue": 48,
                       "revenueType": "Purchased",
                       "time": 1597383030118,
+                      "user_properties": {
+                        "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+                    },
                       "session_id": -1
                   }
               ],
@@ -1254,6 +1309,9 @@
                       "revenue": 48,
                       "revenueType": "Purchased",
                       "time": 1597383030118,
+                      "user_properties": {
+                        "anonymousId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
+                    },
                       "session_id": -1
                   }
               ],
@@ -1268,6 +1326,8 @@
       "userId": "50be5c78-6c3f-4b60-be84-97805a316fb1"
   
 },
+
+
 {
       "version": "1",
       "type": "REST",
