@@ -534,7 +534,7 @@ function updateTraitsObject(property, traitObject, newProperty) {
   return traitObject;
 }
 
-function passingTraitConfigs(
+function prepareTraitConfigs(
   configPropertyTrait,
   objectToInclude,
   traitObject
@@ -555,7 +555,7 @@ function handlingTraits(message, destination) {
 
   if (destination.Config.traitsToIncrement) {
     const objectToInclude = "$add";
-    updatedTrait = passingTraitConfigs(
+    updatedTrait = prepareTraitConfigs(
       destination.Config.traitsToIncrement,
       objectToInclude,
       traitObject
@@ -563,7 +563,7 @@ function handlingTraits(message, destination) {
   }
   if (destination.Config.traitsToSetOnce) {
     const objectToInclude = "$setOnce";
-    updatedTrait = passingTraitConfigs(
+    updatedTrait = prepareTraitConfigs(
       destination.Config.traitsToSetOnce,
       objectToInclude,
       traitObject
@@ -571,7 +571,7 @@ function handlingTraits(message, destination) {
   }
   if (destination.Config.traitsToAppend) {
     const objectToInclude = "$append";
-    updatedTrait = passingTraitConfigs(
+    updatedTrait = prepareTraitConfigs(
       destination.Config.traitsToAppend,
       objectToInclude,
       traitObject
@@ -579,7 +579,7 @@ function handlingTraits(message, destination) {
   }
   if (destination.Config.traitsToPrepend) {
     const objectToInclude = "$prepend";
-    updatedTrait = passingTraitConfigs(
+    updatedTrait = prepareTraitConfigs(
       destination.Config.traitsToPrepend,
       objectToInclude,
       traitObject
