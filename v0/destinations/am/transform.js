@@ -524,26 +524,26 @@ function trackRevenueEvent(message, destination) {
   return sendEvents;
 }
 
-function updateTraitsObject(property, traitObject, newProperty) {
+function updateTraitsObject(property, traitsObject, newProperty) {
   let propertyToUpdate;
-  if (traitObject.hasOwnProperty(property)) {
-    propertyToUpdate = traitObject[property];
-    traitObject[newProperty][property] = propertyToUpdate;
-    delete traitObject[property];
+  if (traitsObject.hasOwnProperty(property)) {
+    propertyToUpdate = traitsObject[property];
+    traitsObject[newProperty][property] = propertyToUpdate;
+    delete traitsObject[property];
   }
-  return traitObject;
+  return traitsObject;
 }
 
-function prepareTraitConfigs(
-  configPropertyTrait,
+function prepareTraitsConfig(
+  configTraitsPropertyKey,
   objectToInclude,
-  traitObject
+  traitsObject
 ) {
   let updatedTrait;
-  traitObject[objectToInclude] = new Object();
-  configPropertyTrait.forEach(traitCount => {
+  traitsObject[objectToInclude] = new Object();
+  configTraitsPropertyKey.forEach(traitCount => {
     const property = traitCount.traits;
-    updatedTrait = updateTraitsObject(property, traitObject, objectToInclude);
+    updatedTrait = updateTraitsObject(property, traitsObject, objectToInclude);
   });
   return updatedTrait;
 }
@@ -551,38 +551,38 @@ function prepareTraitConfigs(
 function handlingTraits(message, destination) {
   let updatedTrait;
   const messageBuffer = JSON.parse(JSON.stringify(message));
-  const traitObject = JSON.parse(JSON.stringify(messageBuffer.context.traits));
+  const traitsObject = JSON.parse(JSON.stringify(messageBuffer.context.traits));
 
   if (destination.Config.traitsToIncrement) {
     const objectToInclude = "$add";
-    updatedTrait = prepareTraitConfigs(
+    updatedTrait = prepareTraitsConfig(
       destination.Config.traitsToIncrement,
       objectToInclude,
-      traitObject
+      traitsObject
     );
   }
   if (destination.Config.traitsToSetOnce) {
     const objectToInclude = "$setOnce";
-    updatedTrait = prepareTraitConfigs(
+    updatedTrait = prepareTraitsConfig(
       destination.Config.traitsToSetOnce,
       objectToInclude,
-      traitObject
+      traitsObject
     );
   }
   if (destination.Config.traitsToAppend) {
     const objectToInclude = "$append";
-    updatedTrait = prepareTraitConfigs(
+    updatedTrait = prepareTraitsConfig(
       destination.Config.traitsToAppend,
       objectToInclude,
-      traitObject
+      traitsObject
     );
   }
   if (destination.Config.traitsToPrepend) {
     const objectToInclude = "$prepend";
-    updatedTrait = prepareTraitConfigs(
+    updatedTrait = prepareTraitsConfig(
       destination.Config.traitsToPrepend,
       objectToInclude,
-      traitObject
+      traitsObject
     );
   }
   messageBuffer.context.traits = updatedTrait;
