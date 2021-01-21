@@ -118,6 +118,66 @@ function createRevenuePayload(message, rawPayload) {
   return rawPayload;
 }
 
+function updateTraitsObject(property, traitsObject, newProperty) {
+  let propertyToUpdate;
+  if (traitsObject[property]) {
+    propertyToUpdate = traitsObject[property];
+    traitsObject[newProperty][property] = propertyToUpdate;
+    delete traitsObject[property];
+  }
+  return traitsObject;
+}
+
+function prepareTraitsConfig(configPropertyTrait, actionKey, traitsObject) {
+  let updatedTrait;
+  traitsObject[actionKey] = {};
+  configPropertyTrait.forEach(traitCount => {
+    const property = traitCount.traits;
+    updatedTrait = updateTraitsObject(property, traitsObject, actionKey);
+  });
+  return updatedTrait;
+}
+
+function handleTraits(messageTrait, destination) {
+  let updatedTrait;
+  const traitsObject = JSON.parse(JSON.stringify(messageTrait));
+
+  if (destination.Config.traitsToIncrement) {
+    const actionKey = "$add";
+    updatedTrait = prepareTraitsConfig(
+      destination.Config.traitsToIncrement,
+      actionKey,
+      traitsObject
+    );
+  }
+  if (destination.Config.traitsToSetOnce) {
+    const actionKey = "$setOnce";
+    updatedTrait = prepareTraitsConfig(
+      destination.Config.traitsToSetOnce,
+      actionKey,
+      traitsObject
+    );
+  }
+  if (destination.Config.traitsToAppend) {
+    const actionKey = "$append";
+    updatedTrait = prepareTraitsConfig(
+      destination.Config.traitsToAppend,
+      actionKey,
+      traitsObject
+    );
+  }
+  if (destination.Config.traitsToPrepend) {
+    const actionKey = "$prepend";
+    updatedTrait = prepareTraitsConfig(
+      destination.Config.traitsToPrepend,
+      actionKey,
+      traitsObject
+    );
+  }
+  // messageBuffer.context.traits = updatedTrait;
+  return updatedTrait;
+}
+
 function responseBuilderSimple(
   groupInfo,
   rootElementName,
@@ -170,8 +230,15 @@ function responseBuilderSimple(
       if (evType === EventType.IDENTIFY) {
         // update payload user_properties from userProperties/traits/context.traits/nested traits of Rudder message
         // traits like address converted to top level useproperties (think we can skip this extra processing as AM supports nesting upto 40 levels)
+        if (
+          destination.Config.traitsToIncrement ||
+          destination.Config.traitsToSetOnce ||
+          destination.Config.traitsToPrepend ||
+          destination.Config.traitsToAppend
+        ) {
+          traits = handleTraits(message.context.traits, destination);
+        } else traits = getFieldValueFromMessage(message, "traits");
         set(rawPayload, "user_properties", message.userProperties);
-        traits = getFieldValueFromMessage(message, "traits");
         if (traits) {
           Object.keys(traits).forEach(trait => {
             if (SpecedTraits.includes(trait)) {
@@ -524,71 +591,6 @@ function trackRevenueEvent(message, destination) {
   return sendEvents;
 }
 
-function updateTraitsObject(property, traitsObject, newProperty) {
-  let propertyToUpdate;
-  if (traitsObject.hasOwnProperty(property)) {
-    propertyToUpdate = traitsObject[property];
-    traitsObject[newProperty][property] = propertyToUpdate;
-    delete traitsObject[property];
-  }
-  return traitsObject;
-}
-
-function prepareTraitsConfig(
-  configTraitsPropertyKey,
-  objectToInclude,
-  traitsObject
-) {
-  let updatedTrait;
-  traitsObject[objectToInclude] = new Object();
-  configTraitsPropertyKey.forEach(traitCount => {
-    const property = traitCount.traits;
-    updatedTrait = updateTraitsObject(property, traitsObject, objectToInclude);
-  });
-  return updatedTrait;
-}
-
-function handlingTraits(message, destination) {
-  let updatedTrait;
-  const messageBuffer = JSON.parse(JSON.stringify(message));
-  const traitsObject = JSON.parse(JSON.stringify(messageBuffer.context.traits));
-
-  if (destination.Config.traitsToIncrement) {
-    const objectToInclude = "$add";
-    updatedTrait = prepareTraitsConfig(
-      destination.Config.traitsToIncrement,
-      objectToInclude,
-      traitsObject
-    );
-  }
-  if (destination.Config.traitsToSetOnce) {
-    const objectToInclude = "$setOnce";
-    updatedTrait = prepareTraitsConfig(
-      destination.Config.traitsToSetOnce,
-      objectToInclude,
-      traitsObject
-    );
-  }
-  if (destination.Config.traitsToAppend) {
-    const objectToInclude = "$append";
-    updatedTrait = prepareTraitsConfig(
-      destination.Config.traitsToAppend,
-      objectToInclude,
-      traitsObject
-    );
-  }
-  if (destination.Config.traitsToPrepend) {
-    const objectToInclude = "$prepend";
-    updatedTrait = prepareTraitsConfig(
-      destination.Config.traitsToPrepend,
-      objectToInclude,
-      traitsObject
-    );
-  }
-  messageBuffer.context.traits = updatedTrait;
-  return messageBuffer;
-}
-
 function process(event) {
   const respList = [];
   const { message, destination } = event;
@@ -600,19 +602,6 @@ function process(event) {
       revenueEvents.forEach(revenueEvent => {
         toSendEvents.push(revenueEvent);
       });
-    } else {
-      toSendEvents.push(message);
-    }
-  } else if (messageType === EventType.IDENTIFY) {
-    // check if the call is Identify
-    if (
-      destination.Config.traitsToIncrement ||
-      destination.Config.traitsToSetOnce ||
-      destination.Config.traitsToPrepend ||
-      destination.Config.traitsToAppend
-    ) {
-      const identifyTraits = handlingTraits(message, destination);
-      toSendEvents.push(identifyTraits);
     } else {
       toSendEvents.push(message);
     }
