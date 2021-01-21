@@ -14,7 +14,9 @@ const {
   defaultRequestConfig,
   defaultBatchRequestConfig,
   getParsedIP,
-  getFieldValueFromMessage
+  getFieldValueFromMessage,
+  getValueFromMessage,
+  defaultGetRequestConfig
 } = require("../../util");
 const {
   Event,
@@ -37,6 +39,8 @@ const {
 const AMUtils = require("./utils");
 
 const logger = require("../../../logger");
+const { compact } = require("lodash");
+const { configs } = require("eslint-plugin-prettier");
 
 const AMBatchSizeLimit = 20 * 1024 * 1024; // 20 MB
 const AMBatchEventLimit = 500; // event size limit from sdk is 32KB => 15MB
@@ -120,10 +124,21 @@ function createRevenuePayload(message, rawPayload) {
 
 function updateTraitsObject(property, traitsObject, newProperty) {
   let propertyToUpdate;
-  if (traitsObject[property]) {
-    propertyToUpdate = traitsObject[property];
-    traitsObject[newProperty][property] = propertyToUpdate;
-    delete traitsObject[property];
+  const getProperty = property.split(".");
+  if (getProperty.length > 1) {
+    if (traitsObject[getProperty[0]]) {
+      if (typeof traitsObject[getProperty[0]] === "object") {
+        propertyToUpdate = getValueFromMessage(traitsObject, property);;
+        traitsObject[newProperty][property] = propertyToUpdate;
+        delete traitsObject[getProperty[0]][getProperty[1]];
+      }
+    }
+  } else {
+    if (traitsObject[property]) {
+      propertyToUpdate = traitsObject[property];
+      traitsObject[newProperty][property] = propertyToUpdate;
+      delete traitsObject[property];
+    }
   }
   return traitsObject;
 }
@@ -174,7 +189,6 @@ function handleTraits(messageTrait, destination) {
       traitsObject
     );
   }
-  // messageBuffer.context.traits = updatedTrait;
   return updatedTrait;
 }
 
@@ -230,14 +244,15 @@ function responseBuilderSimple(
       if (evType === EventType.IDENTIFY) {
         // update payload user_properties from userProperties/traits/context.traits/nested traits of Rudder message
         // traits like address converted to top level useproperties (think we can skip this extra processing as AM supports nesting upto 40 levels)
+        traits = getFieldValueFromMessage(message, "traits");
         if (
           destination.Config.traitsToIncrement ||
           destination.Config.traitsToSetOnce ||
           destination.Config.traitsToPrepend ||
           destination.Config.traitsToAppend
         ) {
-          traits = handleTraits(message.context.traits, destination);
-        } else traits = getFieldValueFromMessage(message, "traits");
+          traits = handleTraits(traits, destination);
+        }
         set(rawPayload, "user_properties", message.userProperties);
         if (traits) {
           Object.keys(traits).forEach(trait => {
