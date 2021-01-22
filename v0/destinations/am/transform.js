@@ -121,15 +121,29 @@ function createRevenuePayload(message, rawPayload) {
   }
   return rawPayload;
 }
+function deletePropertyPath(object, path) {
+  let i;
+  if (!object || !path) {
+    return;
+  }
+  if (typeof path === "string") {
+    path = path.split(".");
+  }
+  for (i = 0; i < path.length - 1; i += 1) {
+    object = object[path[i]];
 
-function updateTraitsObject(property, traitsObject, newProperty) {
-  const getProperty = property.split(".");
-  const propertyToUpdate = getValueFromMessage(traitsObject, property);
-  traitsObject[newProperty][property] = propertyToUpdate;
-  if (getProperty.length === 1) {
-    delete traitsObject[property];
+    if (typeof obj === "undefined") {
+      return;
+    }
   }
 
+  delete object[path.pop()];
+}
+
+function updateTraitsObject(property, traitsObject, newProperty) {
+  const propertyToUpdate = getValueFromMessage(traitsObject, property);
+  traitsObject[newProperty][property] = propertyToUpdate;
+  deletePropertyPath(traitsObject, property);
   return traitsObject;
 }
 
