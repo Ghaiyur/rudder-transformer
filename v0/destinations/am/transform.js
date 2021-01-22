@@ -123,23 +123,13 @@ function createRevenuePayload(message, rawPayload) {
 }
 
 function updateTraitsObject(property, traitsObject, newProperty) {
-  let propertyToUpdate;
   const getProperty = property.split(".");
-  if (getProperty.length > 1) {
-    if (traitsObject[getProperty[0]]) {
-      if (typeof traitsObject[getProperty[0]] === "object") {
-        propertyToUpdate = getValueFromMessage(traitsObject, property);;
-        traitsObject[newProperty][property] = propertyToUpdate;
-        delete traitsObject[getProperty[0]][getProperty[1]];
-      }
-    }
-  } else {
-    if (traitsObject[property]) {
-      propertyToUpdate = traitsObject[property];
-      traitsObject[newProperty][property] = propertyToUpdate;
-      delete traitsObject[property];
-    }
+  const propertyToUpdate = getValueFromMessage(traitsObject, property);
+  traitsObject[newProperty][property] = propertyToUpdate;
+  if (getProperty.length === 1) {
+    delete traitsObject[property];
   }
+
   return traitsObject;
 }
 
